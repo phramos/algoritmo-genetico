@@ -19,6 +19,8 @@
             this.bin = bin;
             this.decimal = parseInt(bin, 2);
             this.aptidao = calculaFuncao(this.decimal);
+            //this.mutado = false;
+            //this.crossover = false;
         };
 
 //Transforma string binarias em string binarias de 5 digitos
@@ -64,13 +66,16 @@
 //Tenta gerar novos descendentes
        $scope.gerarDescendentes =  function gerarDescedentes(numeroGeracao) {
             //Gera indices randomicos dos idividuos da opulacao a serem combinados
-            var iPai = getRandomInt(0, $scope.tamanhoPopulacao-1);
-            var iMae = iPai;
+            var iPai = torneio(numeroGeracao);
+            var iMae = torneio(numeroGeracao);
 
-            //Garante 2 individuos diferentes
-            while (iMae == iPai) {
-                iMae = getRandomInt(0, $scope.tamanhoPopulacao-1);
-            }
+            //var iPai = getRandomInt(0, $scope.tamanhoPopulacao-1);
+            //var iMae = iPai;
+
+            ////Garante 2 individuos diferentes
+            //while (iMae == iPai) {
+            //    iMae = getRandomInt(0, $scope.tamanhoPopulacao-1);
+            //}
 
             //pega o valor dos individuos sorteados
             //var pai = populacao[iPai];
@@ -89,7 +94,7 @@
 
             //Verifica se ocorrera mutacao
             if(getRandomInt(0, 100) < $scope.taxaMutacao) {
-                //mutacao();
+                $scope.mutacao(iPai, iMae, numeroGeracao);
             }
         };
 
@@ -115,16 +120,16 @@
 //Aplica a mutacao baseando-se nos individuos do indice informado na geracao informada
         $scope.mutacao = function mutacao(iIndividuo1, iIndividuo2, numeroGeracao) {
             //Obtem os indices com base nos indices e geracao
-            var individuo1 = geracao[numeroGeracao+1].populacao[iIndividuo1];
-            var individuo2 = geracao[numeroGeracao+1].populacao[iIndividuo2];
+            var individuo1 = $scope.geracao[numeroGeracao+1].populacao[iIndividuo1];
+            var individuo2 = $scope.geracao[numeroGeracao+1].populacao[iIndividuo2];
 
             //Muta os individuos
             individuo1 = new Individuo(mutar(individuo1.bin));
             individuo2 = new Individuo(mutar(individuo2.bin));
 
             //Coloca os individuos mutados na geracao
-            geracao[numeroGeracao+1].populacao[iIndividuo1] = individuo1;
-            geracao[numeroGeracao+1].populacao[iIndividuo2] = individuo2;
+            $scope.geracao[numeroGeracao+1].populacao[iIndividuo1] = individuo1;
+            $scope.geracao[numeroGeracao+1].populacao[iIndividuo2] = individuo2;
         };
 
 //Retorna um binario mutando um indice aleatorio
@@ -132,16 +137,25 @@
             var binMutado;
             var indiceMutado = getRandomInt(0, 4);
             if (indiceMutado == 0) {
-                if (bin.charArt(indiceMutado) == "-") {
+                if (bin[indiceMutado] == "-") {
                     binMutado = "0".concat(bin.substr(1, 4));
                 } else {
                     binMutado = "-".concat(bin.substr(1, 4));
                 }
             } else {
-                if (bin.charAt(indiceMutado) == "0") {
-                    binMutado = bin.substr(0, indiceMutado) + "1" + bin.substr(indiceMutado+1);
-                } else {
-                    binMutado = bin.substr(0, indiceMutado) + "0" + bin.substr(indiceMutado+1);
+
+                if (indiceMutado == 4) {
+                    if (bin[indiceMutado] == "0") {
+                        binMutado = bin.substr(0, indiceMutado) + "1";
+                    } else {
+                        binMutado = bin.substr(0, indiceMutado) + "0";
+                    }
+                }else {
+                    if (bin[indiceMutado] == "0") {
+                        binMutado = bin.substr(0, indiceMutado) + "1" + bin.substr(indiceMutado + 1);
+                    } else {
+                        binMutado = bin.substr(0, indiceMutado) + "0" + bin.substr(indiceMutado + 1);
+                    }
                 }
             }
 
@@ -158,13 +172,24 @@
             return (x*x) - (3*x) + 4;
         };
 
+        function torneio(numeroGeracao) {
+            var iIndividuo1 = getRandomInt(0, $scope.tamanhoPopulacao-1);
+            var iIndividuo2 = getRandomInt(0, $scope.tamanhoPopulacao-1);
+            var individuo1 = $scope.geracao[numeroGeracao].populacao[iIndividuo1];
+            var individuo2 = $scope.geracao[numeroGeracao].populacao[iIndividuo2];
+
+            if (individuo1.aptidao < individuo2.aptidao) {
+                return iIndividuo1;
+            } else {
+                return iIndividuo2;
+            }
+        }
+
         $scope.algoritmoGenetico = function algoritmoGenetico() {
             $scope.gerarPrimeiraGeracao();
             $scope.criarGeracoes($scope.quantidadeGeracoes);
         };
 
     });
-
-
 
 })();
