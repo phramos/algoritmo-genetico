@@ -2,21 +2,22 @@
  * Created by fauno on 12/9/15.
  */
 (function($) {
-    var modulo = angular.module('appModule', []);
+    var modulo = angular.module('appModule', ['ui.bootstrap']);
 
     modulo.controller('AppCtrl', function($scope) {
         $scope.taxaCrossover = 70;
         $scope.taxaMutacao = 1;
-        $scope.elite = false;
-        $scope.tamanhoPopulacao = 30;
-        $scope.quantidadeGeracoes = 50;
+        $scope.elite = true;
+        $scope.accordionAberto = true;
+        $scope.tamanhoPopulacao = 5;
+        $scope.quantidadeGeracoes = 5;
 
         $scope.geracao = [];
 
         $scope.ordem = "aptidao";
 
         function Individuo(bin) {
-            this.bin = bin;
+            this.bin = bin.toString();
             this.decimal = parseInt(bin, 2);
             this.aptidao = calculaFuncao(this.decimal);
             //this.mutado = false;
@@ -66,12 +67,10 @@
 //Tenta gerar novos descendentes
        $scope.gerarDescendentes =  function gerarDescedentes(numeroGeracao) {
             //Gera indices randomicos dos idividuos da opulacao a serem combinados
-            var iPai = torneio(numeroGeracao);
-            var iMae = torneio(numeroGeracao);
 
             //var iPai = getRandomInt(0, $scope.tamanhoPopulacao-1);
             //var iMae = iPai;
-
+            //
             ////Garante 2 individuos diferentes
             //while (iMae == iPai) {
             //    iMae = getRandomInt(0, $scope.tamanhoPopulacao-1);
@@ -81,7 +80,11 @@
             //var pai = populacao[iPai];
             //var mae = populacao[iMae];
 
-            //Verifica se ocorrera o crossover
+           var iPai = torneio(numeroGeracao);
+           var iMae = torneio(numeroGeracao);
+
+
+           //Verifica se ocorrera o crossover
             if (getRandomInt(0,100) < $scope.taxaCrossover) {
                 $scope.crossover(iPai, iMae, numeroGeracao);
             } else {
@@ -112,9 +115,17 @@
             var filho1 = new Individuo(pai.bin.substr(0,3).concat(mae.bin.substr(3,2)));
             var filho2 = new Individuo(mae.bin.substr(0,3).concat(pai.bin.substr(3,2)));
 
-            //adicionna os filhos na geracao criada no lugar de seus pais
-            $scope.geracao[numeroGeracao+1].populacao[iPai] = filho1;
-            $scope.geracao[numeroGeracao+1].populacao[iMae] = filho2;
+            if ($scope.elite){
+                var individuos = [pai, mae, filho1, filho2];
+                individuos.sort(compare);
+                $scope.geracao[numeroGeracao+1].populacao[iPai] = individuos[0];
+                $scope.geracao[numeroGeracao+1].populacao[iMae] = individuos[1];
+                var c = 1;
+            }else {
+                //adicionna os filhos na geracao criada no lugar de seus pais
+                $scope.geracao[numeroGeracao+1].populacao[iPai] = filho1;
+                $scope.geracao[numeroGeracao+1].populacao[iMae] = filho2;
+            }
         };
 
 //Aplica a mutacao baseando-se nos individuos do indice informado na geracao informada
@@ -166,7 +177,7 @@
             for (var i = 0; i<quantidadeGeracoes-1; i++) {
                 $scope.gerarDescendentes(i);
             }
-        }
+        };
 
         function calculaFuncao(x) {
             return (x*x) - (3*x) + 4;
@@ -183,9 +194,25 @@
             } else {
                 return iIndividuo2;
             }
-        }
+        };
+
+        //Funcao de comparacao para ordenar com base na aptidao menor, onde aptidao = valor da funcao
+        function compare(a,b) {
+            if (a.aptidao < b.aptidao){
+                return -1;
+            }
+            if (a.aptidao > b.aptidao){
+                return 1;
+            }
+            return 0;
+        };
+
+        function limparGeracao() {
+          $scope.geracao = new Array(tamanhoPopulacao);
+        };
 
         $scope.algoritmoGenetico = function algoritmoGenetico() {
+            limparGeracao();
             $scope.gerarPrimeiraGeracao();
             $scope.criarGeracoes($scope.quantidadeGeracoes);
         };

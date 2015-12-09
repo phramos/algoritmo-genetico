@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
     <script src="bower_components/angular/angular.js"></script>
+    <script src="scripts/ui-bootstrap-tpls-0.14.3.js"></script>
     <script src="scripts/app.js"></script>
     <title>Algoritmo Genético</title>
 </head>
 <body ng-app="appModule" ng-controller="AppCtrl">
-
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -71,8 +71,17 @@
                 </div>
 
                 <div class="form-group col-md-3">
-                    <label for="quantidadeGeracoes">Tamanho da População</label>
+                    <label for="quantidadeGeracoes">Quantidade de Gerações</label>
                     <input type="number" class="form-control" id="quantidadeGeracoes" ng-model="quantidadeGeracoes" placeholder="Quantidade de gerações">
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="checkbox">
+                    <label> <input type="checkbox" ng-model="elite">Ativar elitismo </label>
+                </div>
+                <div class="checkbox">
+                    <label> <input type="checkbox" ng-model="accordionAberto">Expandir seções</label>
                 </div>
             </div>
             <div class="row">
@@ -91,23 +100,29 @@
 
 
         <div ng-repeat="g in geracao">
-                <h2>{{g.descricao}}</h2>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <td>Binário</td>
-                        <td>Decimal</td>
-                        <td>f(x)</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="individuo in g.populacao | orderBy:ordem">
-                        <td>{{individuo.bin}}</td>
-                        <td>{{individuo.decimal}}</td>
-                        <td>{{individuo.aptidao}}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <uib-accordion>
+                <uib-accordion-group heading="{{g.descricao}}" is-open="accordionAberto">
+                    <div class="col-md-12">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <td>Binário</td>
+                            <td>Decimal</td>
+                            <td>f(x)</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="individuo in g.populacao | orderBy:ordem">
+                            <td>{{individuo.bin}}</td>
+                            <td>{{individuo.decimal}}</td>
+                            <td>{{individuo.aptidao}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </uib-accordion-group>
+            </uib-accordion>
 
         </div>
     </div>
