@@ -1,43 +1,41 @@
 //Taxa de crossover
 var taxaCrossover = 70;
+var taxaMutacao = 1;
+var elite = false;
+var tamanhoPopulacao = 30;
+var quantidadeGeracoes = 50;
+
 
 //Array que guarda a populacao
-var populacao = [0, 0, 0, 0];
+var geracao = [];
 
-//Extensao de Number para inclusao de mmetodo que converte um decimal para binario
-Number.prototype.toBin = function() {
-    number = this;
-    var bin = ((number >>> 0) + ((number >= 0) ? 0 : -1)).toString(2);
-    return ((number > 0) ? '0' : '') + bin;
+
+function Individuo(bin) {
+    this.bin = bin;
+    this.decimal = parseInt(bin, 2);
+    this.aptidao = calculaFuncao(this.decimal);
 };
 
+//Transforma string binarias em string binarias de 5 digitos
 String.prototype.to5digit = function() {
-    var valor = this;
-    if (valor.length<5){
-        while (valor.length<5){
-            valor = valor.charAt(0) + valor;
-        }
-    }
+    var bin = this;
+    if (bin.length<5){
+        while (bin.length<5){
+            if (bin.charAt(0) == "-"){
+                var signal = bin.charAt(0);
+                bin = signal + "0" + bin.substr(1, bin.length-1);
 
-    if (valor.length == 32) {
-        while (valor.length>5){
-            valor = valor.substr(27,5);
+            } else {
+                bin = "0" + bin;
+            }
         }
     }
-    return valor;
+    return bin;
 };
 
-//Extensao de String para inclusao de metodo que converte um binario para numero decimal
-String.prototype.toNumber = function() {
-    var aux = 1;
-    var number = this;
-    if (number.length == 32) {
-        for (var i = 0; i < 32; ++i) {
-            number = number.substr(0, i) + ((number[i] === '1')? '0' : '1') + number.substr(i+1);
-        }
-        aux = -1;
-    }
-    return parseInt(number, 2) * aux;
+//Extensao da classe Array para clonar arrays
+Array.prototype.clone = function() {
+    return this.slice(0);
 };
 
 //Gera um inteiro limitado pelos valores de min e max inclusos
@@ -46,34 +44,111 @@ function getRandomInt(min, max) {
 };
 
 //Gera a populacao iniciao de 4 individuoes com valores decimais de -10 ate 10
-function geraPopulacaoInicial() {
-    for(var i = 0; i<4; i++) {
+function gerarPopulacaoInicial() {
+    geracao[0] = {
+        populacao: new Array(tamanhoPopulacao)
+    };
+    for(var i = 0; i<tamanhoPopulacao; i++) {
         var numeroSorteado = getRandomInt(-10, 10);
-        populacao[i] = numeroSorteado;
+        geracao[0].populacao[i] = new Individuo(numeroSorteado.toString(2).to5digit());
     }
 };
 
-function crossover() {
-    if (Math.random()*100 < taxaCrossover) {
+//Tenta gerar novos descendentes
+function gerarDescedentes(numeroGeracao) {
+    //Gera indices randomicos dos idividuos da opulacao a serem combinados
+    var iPai = getRandomInt(0, tamanhoPopulacao-1);
+    var iMae = iPai;
 
-        //Gera indices randomicos dos idividuos da opulacao a serem combinados
-        var iPai = getRandomInt(0, 3);
-        var iMae = iPai;
-        while (iMae == iPai) {
-            iMae = getRandomInt(0, 3);
+    //Garante 2 individuos diferentes
+    while (iMae == iPai) {
+        iMae = getRandomInt(0, tamanhoPopulacao-1);
+    }
+
+    //pega o valor dos individuos sorteados
+    //var pai = populacao[iPai];
+    //var mae = populacao[iMae];
+
+    //Verifica se ocorrera o crossover
+    if (getRandomInt(0,100) < taxaCrossover) {
+        crossover(iPai, iMae, numeroGeracao);
+    } else {
+        geracao[numeroGeracao+1] = {
+            populacao: new Array(tamanhoPopulacao)
+        };
+        geracao[numeroGeracao+1].populacao = geracao[numeroGeracao].populacao.clone()
+    }
+
+    //Verifica se ocorrera mutacao
+    if(getRandomInt(0, 100) < taxaMutacao) {
+        //mutacao();
+    }
+};
+
+//Aplica o crossover baseando-se na numero da geracao base e os indices do pai e da mae a serem combinados
+function crossover(iPai, iMae, numeroGeracao) {
+    geracao[numeroGeracao+1] = {
+        populacao: geracao[numeroGeracao].populacao.clone()
+    }
+
+    var pai = geracao[numeroGeracao+1].populacao[iPai];
+    var mae = geracao[numeroGeracao+1].populacao[iMae];
+
+    var filho1 = new Individuo(pai.bin.substr(0,3).concat(mae.bin.substr(3,2)));
+    var filho2 = new Individuo(mae.bin.substr(0,3).concat(pai.bin.substr(3,2)));
+
+    //adicionna os filhos na geracao criada no lugar de seus pais
+    geracao[numeroGeracao+1].populacao[iPai] = filho1;
+    geracao[numeroGeracao+1].populacao[iMae] = filho2;
+};
+
+//Aplica a mutacao baseando-se nos individuos do indice informado na geracao informada
+function mutacao(iIndividuo1, iIndividuo2, numeroGeracao) {
+    //Obtem os indices com base nos indices e geracao
+    var individuo1 = geracao[numeroGeracao+1].populacao[iIndividuo1];
+    var individuo2 = geracao[numeroGeracao+1].populacao[iIndividuo2];
+
+    //Muta os individuos
+    individuo1 = new Individuo(mutar(individuo1.bin));
+    individuo2 = new Individuo(mutar(individuo2.bin));
+
+    //Coloca os individuos mutados na geracao
+    geracao[numeroGeracao+1].populacao[iIndividuo1] = individuo1;
+    geracao[numeroGeracao+1].populacao[iIndividuo2] = individuo2;
+};
+
+//Retorna um binario mutando um indice aleatorio
+function mutar(bin) {
+    var binMutado;
+    var indiceMutado = getRandomInt(0, 4);
+    if (indiceMutado == 0) {
+        if (bin.charArt(indiceMutado) == "-") {
+            binMutado = "0".concat(bin.substr(1, 4));
+        } else {
+            binMutado = "-".concat(bin.substr(1, 4));
         }
-        //pega o valor dos individuos sorteados
-        var pai = populacao[iPai];
-        var mae = populacao[iMae];
-
-
+    } else {
+        if (bin.charAt(indiceMutado) == "0") {
+            binMutado = bin.substr(0, indiceMutado) + "1" + bin.substr(indiceMutado+1);
+        } else {
+            binMutado = bin.substr(0, indiceMutado) + "0" + bin.substr(indiceMutado+1);
+        }
     }
+
+    return binMutado;
 };
 
-//function combinaBinario(iPai, iMae) {
-//    var filho1 = populacao.
-//}
+function criarGeracoes(quantidadeGeracoes) {
+    for (var i = 0; i<quantidadeGeracoes-1; i++) {
+        gerarDescedentes(i);
+    }
+}
 
 function calculaFuncao(x) {
     return (x*x) - (3*x) + 4;
+};
+
+function algoritmoGenetico() {
+    gerarPopulacaoInicial();
+    criarGeracoes(quantidadeGeracoes);
 };
