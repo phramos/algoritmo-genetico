@@ -13,6 +13,7 @@
 
         $scope.geracao = [];
 
+        $scope.ordem = "aptidao";
 
         function Individuo(bin) {
             this.bin = bin;
