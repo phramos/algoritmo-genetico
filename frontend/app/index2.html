@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="scripts/app.js"></script>
+    <title>Algoritmo Genético</title>
+</head>
+<body ng-app="appModule" ng-controller="AppCtrl">
+
+<button ng-click="algoritmoGenetico()">Gerar Primeira Geração</button>
+        <div ng-repeat="g in geracao">
+            <h2>{{g.descricao}}</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <td>Binário</td>
+                    <td>Decimal</td>
+                    <td>f(x)</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="individuo in g.populacao">
+                    <td>{{individuo.bin}}</td>
+                    <td>{{individuo.decimal}}</td>
+                    <td>{{individuo.aptidao}}</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>
