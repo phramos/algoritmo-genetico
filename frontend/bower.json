@@ -23,6 +23,9 @@
   ],
   "dependencies": {
     "angular": "~1.4.8",
-    "bootstrap": "~3.3.6"
+    "bootstrap": "~3.3.6",
+    "angular-bootstrap": "~0.14.3",
+    "Chart.js": "~1.0.2",
+    "angular-chart.js": "~0.8.8"
   }
 }

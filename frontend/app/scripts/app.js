@@ -2,19 +2,28 @@
  * Created by fauno on 12/9/15.
  */
 (function($) {
-    var modulo = angular.module('appModule', ['ui.bootstrap']);
+    var modulo = angular.module('appModule', ['ui.bootstrap', 'chart.js']);
 
     modulo.controller('AppCtrl', function($scope) {
         $scope.taxaCrossover = 70;
         $scope.taxaMutacao = 1;
         $scope.elite = true;
         $scope.accordionAberto = true;
-        $scope.tamanhoPopulacao = 5;
-        $scope.quantidadeGeracoes = 5;
+        $scope.tamanhoPopulacao = 30;
+        $scope.quantidadeGeracoes = 50;
 
         $scope.geracao = [];
 
         $scope.ordem = "aptidao";
+
+
+
+        $scope.labels = [1, 2, 3, 4, 5, 6,7];
+        $scope.data = [
+            [65, 59, 80, 81, 56, 55, 40]
+        ];
+        $scope.series = ["Valor na funcao x^2 - 3X + 4"];
+
 
         function Individuo(bin) {
             this.bin = bin.toString();
@@ -62,6 +71,7 @@
                 var numeroSorteado = getRandomInt(-10, 10);
                 $scope.geracao[0].populacao[i] = new Individuo(numeroSorteado.toString(2).to5digit());
             }
+            gerarDadosGrafico(0);
         };
 
 //Tenta gerar novos descendentes
@@ -99,6 +109,8 @@
             if(getRandomInt(0, 100) < $scope.taxaMutacao) {
                 $scope.mutacao(iPai, iMae, numeroGeracao);
             }
+
+           gerarDadosGrafico(numeroGeracao+1);
         };
 
 //Aplica o crossover baseando-se na numero da geracao base e os indices do pai e da mae a serem combinados
@@ -183,7 +195,7 @@
             return (x*x) - (3*x) + 4;
         };
 
-        function torneio(numeroGeracao) {
+        function    torneio(numeroGeracao) {
             var iIndividuo1 = getRandomInt(0, $scope.tamanhoPopulacao-1);
             var iIndividuo2 = getRandomInt(0, $scope.tamanhoPopulacao-1);
             var individuo1 = $scope.geracao[numeroGeracao].populacao[iIndividuo1];
@@ -194,6 +206,20 @@
             } else {
                 return iIndividuo2;
             }
+        };
+
+        function gerarDadosGrafico(numeroGeracao) {
+            var decimais = new Array();
+            var resultadosNaFuncao = new Array();
+            var pop = $scope.geracao[numeroGeracao].populacao;
+            for(var i = 0; i< pop.length; i++) {
+                decimais.push(pop[i].decimal);
+                resultadosNaFuncao.push(pop[i].aptidao);
+            }
+            $scope.geracao[numeroGeracao].decimais = decimais;
+            $scope.geracao[numeroGeracao].valoresNaFuncao = new Array();
+            $scope.geracao[numeroGeracao].valoresNaFuncao.push(resultadosNaFuncao);
+
         };
 
         //Funcao de comparacao para ordenar com base na aptidao menor, onde aptidao = valor da funcao
@@ -216,6 +242,7 @@
             $scope.gerarPrimeiraGeracao();
             $scope.criarGeracoes($scope.quantidadeGeracoes);
         };
+
 
     });
 
